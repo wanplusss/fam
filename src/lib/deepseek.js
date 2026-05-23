@@ -66,7 +66,7 @@ function buildExistingGraphContext(existingGraph) {
   return `\n\nEXISTING ARCHITECTURE CONTEXT (you are ADDING to this — reference it for data flows, dependencies, shared modules, and folder structure consistency):\n\nExisting nodes:\n${nodesSummary}\n\nExisting edges:\n${edgesSummary}\n\nRules:\n1. New node IDs must be unique and NOT duplicate any existing ID above.\n2. New nodes may reference existing node IDs in their dependencies[] array.\n3. New edges may connect new nodes to existing node IDs.\n4. Reuse existing folder paths where the new feature belongs in the same module.\n5. Describe data flows that reference existing services/repositories where relevant.`
 }
 
-async function callDeepSeek({ apiKey, model, system, user, max_tokens = 4000 }) {
+async function callDeepSeek({ apiKey, model, system, user, max_tokens = 10000 }) {
   const response = await fetch(`${BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -172,7 +172,7 @@ export async function analyzeFeatures({ apiKey, model, features, integrations, e
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4000,
+      max_tokens: 10000,
       messages: [
         {
           role: 'system',
