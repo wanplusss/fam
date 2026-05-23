@@ -14,6 +14,7 @@ export const useAppStore = create((set) => ({
   graph: null,
   aiRaw: null,
   nodeReviews: {},  // { [nodeId]: { loading, review, error } }
+  nodeDepths: {},   // { [nodeId]: { loading, depth, error } }
   selectedNodeId: null,
   loading: false,
   error: null,
@@ -59,6 +60,14 @@ export const useAppStore = create((set) => ({
       nodeReviews: {
         ...state.nodeReviews,
         [nodeId]: { ...state.nodeReviews[nodeId], ...patch },
+      },
+    })),
+
+  setNodeDepth: (nodeId, patch) =>
+    set((state) => ({
+      nodeDepths: {
+        ...state.nodeDepths,
+        [nodeId]: { ...state.nodeDepths[nodeId], ...patch },
       },
     })),
 

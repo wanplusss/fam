@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
-import { reviewNode, fixNode, PATTERN_META } from '../lib/deepseek'
+import { reviewNode, fixNode, analyzeNodeDepth, PATTERN_META } from '../lib/deepseek'
 
-const TABS = ['Dev', 'EA', 'SA', 'Review']
+const TABS = ['Dev', 'EA', 'SA', 'Review', 'Depth']
 
 const RISK_STYLES = {
   low: 'bg-primary-pale text-positive-deep',
@@ -27,7 +27,9 @@ export default function NodeDetail() {
   const selectedNodeId = useAppStore((s) => s.selectedNodeId)
   const config = useAppStore((s) => s.config)
   const nodeReviews = useAppStore((s) => s.nodeReviews)
+  const nodeDepths = useAppStore((s) => s.nodeDepths)
   const setNodeReview = useAppStore((s) => s.setNodeReview)
+  const setNodeDepth = useAppStore((s) => s.setNodeDepth)
   const patchNode = useAppStore((s) => s.patchNode)
   const [activeTab, setActiveTab] = useState('Dev')
   const [copied, setCopied] = useState(false)
@@ -38,6 +40,23 @@ export default function NodeDetail() {
   if (!node) return null
 
   const reviewState = nodeReviews[node.id] ?? {}
+  const depthState = nodeDepths[node.id] ?? {}
+
+  async function handleDepth() {
+    setNodeDepth(node.id, { loading: true, error: null })
+    setActiveTab('Depth')
+    try {
+      const depth = await analyzeNodeDepth({
+        apiKey: config.apiKey,
+        model: config.model,
+        node,
+        allNodes: graph.nodes,
+      })
+      setNodeDepth(node.id, { loading: false, depth })
+    } catch (err) {
+      setNodeDepth(node.id, { loading: false, error: err.message })
+    }
+  }
 
   function copyPrompt() {
     navigator.clipboard.writeText(node.agentPrompt).then(() => {
@@ -128,15 +147,27 @@ export default function NodeDetail() {
             {tab === 'Review' && reviewState.review && (
               <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-warning align-middle" />
             )}
+            {tab === 'Depth' && depthState.depth && (
+              <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-teal-400 align-middle" />
+            )}
           </button>
         ))}
-        <button
-          onClick={handleReview}
-          disabled={reviewState.loading}
-          className="ml-auto px-4 py-2 rounded-xl text-sm font-semibold bg-canvas dark:bg-zinc-700 text-ink dark:text-zinc-300 border border-mute dark:border-zinc-600 hover:bg-primary-pale dark:hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {reviewState.loading ? 'Reviewing…' : '🔍 Review'}
-        </button>
+        <div className="ml-auto flex gap-2">
+          <button
+            onClick={handleReview}
+            disabled={reviewState.loading}
+            className="px-4 py-2 rounded-xl text-sm font-semibold bg-canvas dark:bg-zinc-700 text-ink dark:text-zinc-300 border border-mute dark:border-zinc-600 hover:bg-primary-pale dark:hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {reviewState.loading ? 'Reviewing…' : '🔍 Review'}
+          </button>
+          <button
+            onClick={handleDepth}
+            disabled={depthState.loading}
+            className="px-4 py-2 rounded-xl text-sm font-semibold bg-canvas dark:bg-zinc-700 text-ink dark:text-zinc-300 border border-mute dark:border-zinc-600 hover:bg-primary-pale dark:hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {depthState.loading ? 'Analysing…' : '🧠 Depth'}
+          </button>
+        </div>
       </div>
 
       {activeTab === 'Dev' && (
@@ -290,6 +321,125 @@ export default function NodeDetail() {
           )}
         </div>
       )}
+
+      {activeTab === 'Depth' && (
+        <div className="space-y-5">
+          {depthState.loading && (
+            <div className="flex items-center gap-2 text-sm text-mute">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Running deep analysis…
+            </div>
+          )}
+          {depthState.error && (
+            <div className="px-3 py-2 rounded-xl bg-negative-bg text-canvas text-sm font-semibold">
+              ⚠ {depthState.error}
+            </div>
+          )}
+          {!depthState.loading && !depthState.depth && !depthState.error && (
+            <p className="text-sm text-mute">Click "🧠 Depth" to run engineering analysis.</p>
+          )}
+          {depthState.depth && (() => {
+            const d = depthState.depth
+            return (
+              <>
+                <DepthSection title="SOLID Principles">
+                  <p className="text-xs font-semibold text-mute mb-1">Applicable</p>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {(d.solid?.applicable ?? []).map((s) => (
+                      <span key={s} className="px-2 py-0.5 rounded-pill text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{s}</span>
+                    ))}
+                  </div>
+                  {(d.solid?.violations ?? []).length > 0 && (
+                    <>
+                      <p className="text-xs font-semibold text-mute mb-1">Violations</p>
+                      <ul className="text-xs text-body dark:text-zinc-300 list-disc list-inside mb-2 space-y-0.5">
+                        {d.solid.violations.map((v, i) => <li key={i}>{v}</li>)}
+                      </ul>
+                    </>
+                  )}
+                  <p className="text-xs text-body dark:text-zinc-300">{d.solid?.guidance}</p>
+                </DepthSection>
+
+                <DepthSection title="NFR Deep Dive">
+                  <DepthRow label="Security" value={d.nfr?.security} />
+                  <DepthRow label="Caching" value={d.nfr?.caching} />
+                  <DepthRow label="Rate Limiting" value={d.nfr?.rateLimiting} />
+                  {(d.nfr?.other ?? []).length > 0 && (
+                    <div className="mt-1">
+                      <p className="text-xs font-semibold text-mute mb-1">Additional NFRs</p>
+                      <div className="flex flex-wrap gap-1">
+                        {d.nfr.other.map((o) => (
+                          <span key={o} className="px-2 py-0.5 rounded-pill text-xs font-semibold bg-canvas-soft dark:bg-zinc-700 text-ink dark:text-zinc-300">{o}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </DepthSection>
+
+                <DepthSection title="12-Factor App">
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {(d.twelveFactor?.applicable ?? []).map((f) => (
+                      <span key={f} className="px-2 py-0.5 rounded-pill text-xs font-bold bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">{f}</span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-body dark:text-zinc-300">{d.twelveFactor?.guidance}</p>
+                </DepthSection>
+
+                <DepthSection title="Defensive Programming">
+                  {(d.defensiveProgramming?.dataBoundaries ?? []).length > 0 && (
+                    <>
+                      <p className="text-xs font-semibold text-mute mb-1">Data Boundaries</p>
+                      <ul className="text-xs text-body dark:text-zinc-300 list-disc list-inside mb-2 space-y-0.5">
+                        {d.defensiveProgramming.dataBoundaries.map((b, i) => <li key={i}>{b}</li>)}
+                      </ul>
+                    </>
+                  )}
+                  {(d.defensiveProgramming?.validations ?? []).length > 0 && (
+                    <>
+                      <p className="text-xs font-semibold text-mute mb-1">Validations Needed</p>
+                      <ul className="text-xs text-body dark:text-zinc-300 list-disc list-inside mb-2 space-y-0.5">
+                        {d.defensiveProgramming.validations.map((v, i) => <li key={i}>{v}</li>)}
+                      </ul>
+                    </>
+                  )}
+                  <DepthRow label="Error Handling" value={d.defensiveProgramming?.errorHandling} />
+                </DepthSection>
+
+                <DepthSection title="Testing Strategy">
+                  <DepthRow label="Unit Tests" value={d.testingStrategy?.unitTests} />
+                  <DepthRow label="Integration Tests" value={d.testingStrategy?.integrationTests} />
+                  <DepthRow label="E2E Tests" value={d.testingStrategy?.e2eTests} />
+                  <DepthRow label="Mocking" value={d.testingStrategy?.mocking} />
+                </DepthSection>
+              </>
+            )
+          })()}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DepthSection({ title, children }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold text-mute uppercase tracking-wide mb-2">{title}</p>
+      <div className="bg-canvas dark:bg-zinc-900 border border-mute dark:border-zinc-700 rounded-xl p-3 space-y-2">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function DepthRow({ label, value }) {
+  if (!value) return null
+  return (
+    <div>
+      <p className="text-xs font-semibold text-ink dark:text-zinc-300 mb-0.5">{label}</p>
+      <p className="text-xs text-body dark:text-zinc-400">{value}</p>
     </div>
   )
 }

@@ -157,6 +157,61 @@ Return a single corrected node JSON object matching this schema exactly:
   return JSON.parse(raw.slice(start, end + 1))
 }
 
+export async function analyzeNodeDepth({ apiKey, model, node, allNodes }) {
+  const siblings = allNodes
+    .filter((n) => n.id !== node.id)
+    .map((n) => `- ${n.id}: ${n.label} (${n.pattern}) | deps: ${n.dependencies.join(', ') || 'none'}`)
+    .join('\n')
+
+  const raw = await callDeepSeek({
+    apiKey,
+    model,
+    system: 'You are a senior software engineer and architect. Return ONLY valid JSON — no markdown, no explanation, no code fences.',
+    user: `Perform a deep engineering analysis of this architecture node. Return JSON with exactly these five keys.
+
+NODE:
+${JSON.stringify(node, null, 2)}
+
+OTHER NODES IN SYSTEM:
+${siblings}
+
+Return this JSON structure exactly:
+{
+  "solid": {
+    "applicable": ["list only the SOLID principles that genuinely apply to this node"],
+    "violations": ["any SOLID violations already present in the agent prompt or design"],
+    "guidance": "2-3 sentences on how to apply the relevant principles here"
+  },
+  "nfr": {
+    "security": "specific security concerns and mitigations for this node",
+    "caching": "caching strategy: what to cache, TTL, invalidation approach, or 'Not applicable'",
+    "rateLimiting": "rate limiting needs: where to apply, thresholds, or 'Not applicable'",
+    "other": ["any other critical NFRs for this node not already in nfrTags"]
+  },
+  "twelveFactor": {
+    "applicable": ["12-factor app concerns relevant to this node, e.g. Config, Logs, Backing Services"],
+    "guidance": "how to apply them concretely for this node"
+  },
+  "defensiveProgramming": {
+    "dataBoundaries": ["list each external/internal data boundary this node crosses"],
+    "validations": ["specific input validations needed per boundary"],
+    "errorHandling": "error handling strategy: what to catch, what to propagate, fallback behaviour"
+  },
+  "testingStrategy": {
+    "unitTests": "what to unit test and how — specific functions/behaviours",
+    "integrationTests": "what integration tests are needed and against what",
+    "e2eTests": "E2E scenarios to cover, or 'Not applicable'",
+    "mocking": "what to mock and what must hit real dependencies"
+  }
+}`,
+  })
+
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('Depth analysis returned invalid JSON')
+  return JSON.parse(raw.slice(start, end + 1))
+}
+
 export async function analyzeFeatures({ apiKey, model, features, integrations, existingGraph }) {
   const integrationText = integrations.length > 0
     ? `Integrations in use: ${integrations.join(', ')}.`
