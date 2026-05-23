@@ -3,7 +3,7 @@ import { analyzeFeatures } from '../lib/deepseek'
 import { validateGraph } from '../lib/schema'
 
 export function useAIAnalysis() {
-  const { config, features, mergeMode, setGraph, mergeGraph, setAiRaw, setLoading, setError, clearError } = useAppStore()
+  const { config, features, graph, mergeMode, setGraph, mergeGraph, setAiRaw, setLoading, setError, clearError } = useAppStore()
 
   async function generate() {
     if (!config.apiKey) {
@@ -24,6 +24,7 @@ export function useAIAnalysis() {
         model: config.model,
         features: features.trim(),
         integrations: config.integrations,
+        existingGraph: mergeMode ? graph : null,
       })
 
       setAiRaw({ content, thinking })

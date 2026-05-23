@@ -21,10 +21,26 @@ const SCHEMA_DESCRIPTION = `{
   }]
 }`
 
-export async function analyzeFeatures({ apiKey, model, features, integrations }) {
+function buildExistingGraphContext(existingGraph) {
+  if (!existingGraph) return ''
+
+  const nodesSummary = existingGraph.nodes.map((n) =>
+    `- ID: ${n.id} | Label: ${n.label} | Pattern: ${n.pattern} | DataFlow: ${n.dataFlow} | Folder: ${n.folderStructure.split('\n')[0]}`
+  ).join('\n')
+
+  const edgesSummary = existingGraph.edges.map((e) =>
+    `- ${e.source} → ${e.target} (${e.label})`
+  ).join('\n')
+
+  return `\n\nEXISTING ARCHITECTURE CONTEXT (you are ADDING to this — reference it for data flows, dependencies, shared modules, and folder structure consistency):\n\nExisting nodes:\n${nodesSummary}\n\nExisting edges:\n${edgesSummary}\n\nRules:\n1. New node IDs must be unique and NOT duplicate any existing ID above.\n2. New nodes may reference existing node IDs in their dependencies[] array.\n3. New edges may connect new nodes to existing node IDs.\n4. Reuse existing folder paths where the new feature belongs in the same module.\n5. Describe data flows that reference existing services/repositories where relevant.`
+}
+
+export async function analyzeFeatures({ apiKey, model, features, integrations, existingGraph }) {
   const integrationText = integrations.length > 0
     ? `Integrations in use: ${integrations.join(', ')}.`
     : 'No specific integrations selected.'
+
+  const existingContext = buildExistingGraphContext(existingGraph)
 
   const response = await fetch(`${BASE_URL}/chat/completions`, {
     method: 'POST',
@@ -43,7 +59,7 @@ export async function analyzeFeatures({ apiKey, model, features, integrations })
         },
         {
           role: 'user',
-          content: `Feature list:\n${features}\n\n${integrationText}\n\nOutput schema:\n${SCHEMA_DESCRIPTION}`,
+          content: `Feature list:\n${features}\n\n${integrationText}${existingContext}\n\nOutput schema:\n${SCHEMA_DESCRIPTION}`,
         },
       ],
     }),
