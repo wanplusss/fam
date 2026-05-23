@@ -212,6 +212,46 @@ Return this JSON structure exactly:
   return JSON.parse(raw.slice(start, end + 1))
 }
 
+export async function generateFileStubs({ apiKey, model, node, allNodes }) {
+  if ((node.ownedFiles ?? []).length === 0) return {}
+
+  const sharedContext = (node.sharedFiles ?? []).map((sf) => {
+    const owner = allNodes.find((n) => n.id === sf.ownedBy)
+    return `- ${sf.file} (from ${owner?.label ?? sf.ownedBy}): exports ${sf.exportName ?? 'unknown'}`
+  }).join('\n') || 'None'
+
+  const raw = await callDeepSeek({
+    apiKey,
+    model,
+    system: 'You are a senior software engineer. Return ONLY valid JSON — no markdown, no explanation, no code fences.',
+    user: `Generate realistic file stubs for this architecture node. Each stub should show real function signatures, JSDoc types, and named exports — NOT full implementation, just the contract.
+
+NODE: ${node.label} (${node.pattern})
+Agent Prompt: ${node.agentPrompt}
+Shared imports available:
+${sharedContext}
+
+Files to stub: ${node.ownedFiles.join(', ')}
+
+Return JSON where each key is the file path and the value is the stub code string:
+{
+  "src/features/auth/authService.js": "/** @param {string} token */\\nexport async function validateToken(token) {}\\n\\nexport async function login(credentials) {}"
+}
+
+Rules:
+- Use the correct language based on file extension (.js = JS/ES modules, .ts = TypeScript, .py = Python, etc.)
+- Show real import statements at the top referencing the shared files
+- Named exports only — match what other nodes expect to import
+- JSDoc or type annotations where relevant
+- No implementation bodies — just signatures and exports`,
+  })
+
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('File stubs returned invalid JSON')
+  return JSON.parse(raw.slice(start, end + 1))
+}
+
 export async function analyzeFeatures({ apiKey, model, features, integrations, existingGraph }) {
   const integrationText = integrations.length > 0
     ? `Integrations in use: ${integrations.join(', ')}.`

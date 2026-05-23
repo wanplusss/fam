@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
-import { reviewNode, fixNode, analyzeNodeDepth, PATTERN_META } from '../lib/deepseek'
+import { reviewNode, fixNode, analyzeNodeDepth, generateFileStubs, PATTERN_META } from '../lib/deepseek'
 
-const TABS = ['Dev', 'EA', 'SA', 'Review', 'Depth']
+const TABS = ['Dev', 'EA', 'SA', 'Files', 'Review', 'Depth']
 
 const RISK_STYLES = {
   low: 'bg-primary-pale text-positive-deep',
@@ -28,8 +28,10 @@ export default function NodeDetail() {
   const config = useAppStore((s) => s.config)
   const nodeReviews = useAppStore((s) => s.nodeReviews)
   const nodeDepths = useAppStore((s) => s.nodeDepths)
+  const nodeFiles = useAppStore((s) => s.nodeFiles)
   const setNodeReview = useAppStore((s) => s.setNodeReview)
   const setNodeDepth = useAppStore((s) => s.setNodeDepth)
+  const setNodeFiles = useAppStore((s) => s.setNodeFiles)
   const patchNode = useAppStore((s) => s.patchNode)
   const [activeTab, setActiveTab] = useState('Dev')
   const [copied, setCopied] = useState(false)
@@ -41,6 +43,8 @@ export default function NodeDetail() {
 
   const reviewState = nodeReviews[node.id] ?? {}
   const depthState = nodeDepths[node.id] ?? {}
+  const fileState = nodeFiles[node.id] ?? {}
+  const [activeStubFile, setActiveStubFile] = useState(null)
 
   async function handleDepth() {
     setNodeDepth(node.id, { loading: true, error: null })
@@ -55,6 +59,24 @@ export default function NodeDetail() {
       setNodeDepth(node.id, { loading: false, depth })
     } catch (err) {
       setNodeDepth(node.id, { loading: false, error: err.message })
+    }
+  }
+
+  async function handleLoadStubs() {
+    if (fileState.stubs || fileState.loading) return
+    setNodeFiles(node.id, { loading: true, error: null })
+    try {
+      const stubs = await generateFileStubs({
+        apiKey: config.apiKey,
+        model: config.model,
+        node,
+        allNodes: graph.nodes,
+      })
+      setNodeFiles(node.id, { loading: false, stubs })
+      const first = Object.keys(stubs)[0]
+      if (first) setActiveStubFile(first)
+    } catch (err) {
+      setNodeFiles(node.id, { loading: false, error: err.message })
     }
   }
 
@@ -264,6 +286,96 @@ export default function NodeDetail() {
             <p className="text-xs font-semibold text-mute uppercase tracking-wide mb-1">Effort Estimate</p>
             <p className="text-sm text-body dark:text-zinc-300">{node.effortEstimate}</p>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'Files' && (
+        <div className="space-y-4">
+          {(node.ownedFiles ?? []).length === 0 ? (
+            <p className="text-sm text-mute">No owned files declared on this node. Regenerate to get file data.</p>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2">
+                {node.ownedFiles.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => { setActiveStubFile(f); if (!fileState.stubs) handleLoadStubs() }}
+                    className={`px-3 py-1 rounded-lg text-xs font-mono border transition-colors ${
+                      activeStubFile === f
+                        ? 'bg-primary text-on-primary border-primary'
+                        : 'bg-canvas-soft dark:bg-zinc-700 text-ink dark:text-zinc-300 border-mute dark:border-zinc-600 hover:bg-primary-pale'
+                    }`}
+                  >
+                    {f.split('/').pop()}
+                  </button>
+                ))}
+              </div>
+
+              {!fileState.stubs && !fileState.loading && (
+                <button
+                  onClick={handleLoadStubs}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-canvas-soft dark:bg-zinc-700 border border-mute dark:border-zinc-600 text-ink dark:text-zinc-300 hover:bg-primary-pale transition-colors"
+                >
+                  ⚡ Generate File Stubs
+                </button>
+              )}
+
+              {fileState.loading && (
+                <div className="flex items-center gap-2 text-sm text-mute">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Generating stubs…
+                </div>
+              )}
+
+              {fileState.error && (
+                <div className="px-3 py-2 rounded-xl bg-negative-bg text-canvas text-sm font-semibold">
+                  ⚠ {fileState.error}
+                </div>
+              )}
+
+              {fileState.stubs && activeStubFile && fileState.stubs[activeStubFile] && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-mono text-mute">{activeStubFile}</p>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(fileState.stubs[activeStubFile])}
+                      className="text-xs font-semibold px-3 py-1 rounded-pill bg-primary text-on-primary hover:bg-primary-active transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <pre className="text-xs bg-canvas dark:bg-zinc-900 border border-mute dark:border-zinc-700 rounded-xl p-3 overflow-x-auto text-ink dark:text-zinc-300 font-mono whitespace-pre-wrap max-h-80">
+                    {fileState.stubs[activeStubFile]}
+                  </pre>
+                </div>
+              )}
+
+              {(node.sharedFiles ?? []).length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-mute uppercase tracking-wide mb-2">Imports Used</p>
+                  <ul className="space-y-1">
+                    {node.sharedFiles.map((sf, i) => {
+                      const owner = graph.nodes.find((n) => n.id === sf.ownedBy)
+                      const fname = sf.file.split('/').pop().replace(/\.[^.]+$/, '')
+                      const path = sf.file.replace(/\.[^.]+$/, '')
+                      const importLine = sf.exportName
+                        ? `import { ${sf.exportName} } from '${path}'`
+                        : `import ${fname} from '${path}'`
+                      return (
+                        <li key={i} className="text-xs font-mono bg-canvas dark:bg-zinc-900 border border-mute dark:border-zinc-700 rounded-lg px-3 py-2 text-primary dark:text-primary flex items-center justify-between gap-2">
+                          <span>{importLine}</span>
+                          <span className="text-mute shrink-0">← {owner?.label ?? sf.ownedBy}</span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 

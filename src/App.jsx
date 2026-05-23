@@ -6,6 +6,7 @@ import FeatureInput from './components/FeatureInput'
 import StackDiagram from './components/StackDiagram'
 import GraphCanvas from './components/GraphCanvas'
 import NodeDetail from './components/NodeDetail'
+import EdgeHandoff from './components/EdgeHandoff'
 import AiResponsePanel from './components/AiResponsePanel'
 import ExportPanel from './components/ExportPanel'
 
@@ -49,6 +50,7 @@ export default function App() {
         <GraphCanvas />
         <AiResponsePanel />
         <NodeDetail />
+        <EdgeHandoff />
         <ExportPanel />
       </main>
 

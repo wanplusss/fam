@@ -15,7 +15,9 @@ export const useAppStore = create((set) => ({
   aiRaw: null,
   nodeReviews: {},  // { [nodeId]: { loading, review, error } }
   nodeDepths: {},   // { [nodeId]: { loading, depth, error } }
+  nodeFiles: {},    // { [nodeId]: { loading, stubs, error } }  stubs = { [filePath]: codeString }
   selectedNodeId: null,
+  selectedEdge: null, // { source, target, label, sharedFiles[] }
   loading: false,
   error: null,
   darkMode: localStorage.getItem(STORAGE_KEY_DARK) === 'true',
@@ -70,6 +72,16 @@ export const useAppStore = create((set) => ({
         [nodeId]: { ...state.nodeDepths[nodeId], ...patch },
       },
     })),
+
+  setNodeFiles: (nodeId, patch) =>
+    set((state) => ({
+      nodeFiles: {
+        ...state.nodeFiles,
+        [nodeId]: { ...state.nodeFiles[nodeId], ...patch },
+      },
+    })),
+
+  setSelectedEdge: (edge) => set({ selectedEdge: edge }),
 
   patchNode: (nodeId, fields) =>
     set((state) => {

@@ -13,6 +13,7 @@ import {
 import { useAppStore } from '../store/useAppStore'
 import { useGraphLayout } from '../hooks/useGraphLayout'
 import NodeDetail from './NodeDetail'
+import EdgeHandoff from './EdgeHandoff'
 
 function FamNode({ data }) {
   return (
@@ -33,6 +34,7 @@ const nodeTypes = { famNode: FamNode }
 function Flow({ onFullscreen }) {
   const graph = useAppStore((s) => s.graph)
   const setSelectedNodeId = useAppStore((s) => s.setSelectedNodeId)
+  const setSelectedEdge = useAppStore((s) => s.setSelectedEdge)
   const [layoutVersion, setLayoutVersion] = useState(0)
   const { nodes: layoutNodes, edges: layoutEdges } = useGraphLayout(layoutVersion)
 
@@ -46,7 +48,16 @@ function Flow({ onFullscreen }) {
 
   const onNodeClick = useCallback((_, node) => {
     setSelectedNodeId(node.id)
-  }, [setSelectedNodeId])
+    setSelectedEdge(null)
+  }, [setSelectedNodeId, setSelectedEdge])
+
+  const onEdgeClick = useCallback((_, edge) => {
+    if (!graph) return
+    const targetNode = graph.nodes.find((n) => n.id === edge.target)
+    const passed = (targetNode?.sharedFiles ?? []).filter((sf) => sf.ownedBy === edge.source)
+    setSelectedEdge({ source: edge.source, target: edge.target, label: edge.label, sharedFiles: passed })
+    setSelectedNodeId(null)
+  }, [graph, setSelectedEdge, setSelectedNodeId])
 
   if (!graph) {
     return (
@@ -91,6 +102,7 @@ function Flow({ onFullscreen }) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         nodeTypes={nodeTypes}
         fitView
         className="bg-canvas"
@@ -105,7 +117,9 @@ function Flow({ onFullscreen }) {
 
 function FullscreenOverlay({ onClose }) {
   const selectedNodeId = useAppStore((s) => s.selectedNodeId)
+  const selectedEdge = useAppStore((s) => s.selectedEdge)
   const setSelectedNodeId = useAppStore((s) => s.setSelectedNodeId)
+  const setSelectedEdge = useAppStore((s) => s.setSelectedEdge)
 
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
@@ -135,20 +149,23 @@ function FullscreenOverlay({ onClose }) {
           </ReactFlowProvider>
         </div>
 
-        {/* side panel — slides in when node selected */}
-        {selectedNodeId && (
-          <div className="w-[400px] shrink-0 overflow-y-auto border-l border-mute dark:border-zinc-700 bg-canvas dark:bg-zinc-800">
+        {/* side panel — node detail or edge handoff */}
+        {(selectedNodeId || selectedEdge) && (
+          <div className="w-[440px] shrink-0 overflow-y-auto border-l border-mute dark:border-zinc-700 bg-canvas dark:bg-zinc-800">
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <span className="text-xs font-semibold text-mute uppercase tracking-wide">Node Detail</span>
+              <span className="text-xs font-semibold text-mute uppercase tracking-wide">
+                {selectedNodeId ? 'Node Detail' : 'File Handoff'}
+              </span>
               <button
-                onClick={() => setSelectedNodeId(selectedNodeId)}
+                onClick={() => { setSelectedNodeId(null); setSelectedEdge(null) }}
                 className="text-xs text-mute hover:text-ink dark:hover:text-white transition-colors"
               >
                 ✕ Close
               </button>
             </div>
             <div className="px-4 pb-6">
-              <NodeDetail />
+              {selectedNodeId && <NodeDetail />}
+              {selectedEdge && <EdgeHandoff edge={selectedEdge} />}
             </div>
           </div>
         )}
