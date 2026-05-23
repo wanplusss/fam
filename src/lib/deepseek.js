@@ -38,7 +38,7 @@ const SCHEMA_DESCRIPTION = `{
     "nfrTags": ["string (e.g. Scalability, Security, Performance)"],
     "folderStructure": "string (e.g. src/features/auth/\\n  authService.js\\n  authController.js)",
     "ownedFiles": ["string (files this node owns, e.g. src/features/auth/authService.js)"],
-    "sharedFiles": [{"file": "string (file path)", "ownedBy": "string (node id that owns it)"}],
+    "sharedFiles": [{"file": "string (file path)", "ownedBy": "string (node id that owns it)", "exportName": "string (the specific function/class/variable imported from that file, e.g. validateToken, UserRepository)"}],
     "businessReason": "string (why this feature matters to the business)",
     "effortEstimate": "string (e.g. 3 days, 1 week)",
     "agentPrompt": "string (copy-paste prompt for a coding agent to implement this feature, referencing sibling node files where relevant)",
@@ -147,7 +147,7 @@ OTHER NODES IN SYSTEM:
 ${siblings}
 
 Return a single corrected node JSON object matching this schema exactly:
-{"id":"string","label":"string","pattern":"one of: ${PATTERN_LIST}","dataFlow":"string","riskLevel":"low|medium|high","nfrTags":["string"],"folderStructure":"string","ownedFiles":["string"],"sharedFiles":[{"file":"string","ownedBy":"string"}],"businessReason":"string","effortEstimate":"string","agentPrompt":"string","dependencies":["string"]}`,
+{"id":"string","label":"string","pattern":"one of: ${PATTERN_LIST}","dataFlow":"string","riskLevel":"low|medium|high","nfrTags":["string"],"folderStructure":"string","ownedFiles":["string"],"sharedFiles":[{"file":"string","ownedBy":"string","exportName":"string"}],"businessReason":"string","effortEstimate":"string","agentPrompt":"string","dependencies":["string"]}`,
   })
 
   // extract JSON object from response

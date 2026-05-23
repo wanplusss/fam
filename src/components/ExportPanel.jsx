@@ -1,11 +1,12 @@
 import { useAppStore } from '../store/useAppStore'
-import { toJSON, toMarkdown, toScaffold, toPrompts } from '../lib/exporters'
+import { toJSON, toMarkdown, toScaffold, toPrompts, toBlueprint } from '../lib/exporters'
 
 const EXPORTS = [
   { label: 'Export JSON', fn: toJSON },
   { label: 'Export Markdown', fn: toMarkdown },
   { label: 'Export Scaffold', fn: toScaffold },
   { label: 'Export Agent Prompts', fn: toPrompts },
+  { label: '📦 Export Blueprint', fn: toBlueprint },
 ]
 
 export default function ExportPanel() {

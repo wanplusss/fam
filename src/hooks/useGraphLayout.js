@@ -102,10 +102,13 @@ export function useGraphLayout(layoutVersion = 0) {
       const targetNode = nodeById[edge.target]
       const passedFiles = (targetNode?.sharedFiles ?? [])
         .filter((sf) => sf.ownedBy === edge.source)
-        .map((sf) => sf.file.split('/').pop())
+        .map((sf) => {
+          const fname = sf.file.split('/').pop()
+          return sf.exportName ? `${fname} → ${sf.exportName}` : fname
+        })
 
-      const fileLabel = passedFiles.length > 0 ? passedFiles.join(', ') : null
-      const label = fileLabel ? `${fileLabel}` : (edge.label ?? '')
+      const fileLabel = passedFiles.length > 0 ? passedFiles.join('\n') : null
+      const label = fileLabel ?? (edge.label ?? '')
 
       return {
         id: `e-${i}`,
