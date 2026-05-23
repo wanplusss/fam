@@ -2,11 +2,20 @@
 export function validateGraph(raw) {
   let parsed
   try {
-    // Strip markdown code fences DeepSeek sometimes adds despite instructions
-    const cleaned = typeof raw === 'string'
-      ? raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
-      : raw
-    parsed = typeof cleaned === 'string' ? JSON.parse(cleaned) : cleaned
+    let cleaned = typeof raw === 'string' ? raw : JSON.stringify(raw)
+
+    // Strip markdown code fences
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+
+    // If model returned thinking text before JSON, extract the JSON object/array
+    const jsonStart = cleaned.search(/[{[]/)
+    if (jsonStart > 0) cleaned = cleaned.slice(jsonStart)
+
+    // Trim any trailing text after the JSON
+    const lastBrace = Math.max(cleaned.lastIndexOf('}'), cleaned.lastIndexOf(']'))
+    if (lastBrace !== -1 && lastBrace < cleaned.length - 1) cleaned = cleaned.slice(0, lastBrace + 1)
+
+    parsed = JSON.parse(cleaned)
   } catch {
     const preview = typeof raw === 'string' ? raw.slice(0, 300) : String(raw)
     console.error('AI raw output:', raw)
