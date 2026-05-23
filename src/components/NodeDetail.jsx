@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
+import { reviewNode, fixNode } from '../lib/deepseek'
 
-const TABS = ['Dev', 'EA', 'SA']
+const TABS = ['Dev', 'EA', 'SA', 'Review']
 
 const RISK_STYLES = {
   low: 'bg-primary-pale text-positive-deep',
@@ -12,6 +13,10 @@ const RISK_STYLES = {
 export default function NodeDetail() {
   const graph = useAppStore((s) => s.graph)
   const selectedNodeId = useAppStore((s) => s.selectedNodeId)
+  const config = useAppStore((s) => s.config)
+  const nodeReviews = useAppStore((s) => s.nodeReviews)
+  const setNodeReview = useAppStore((s) => s.setNodeReview)
+  const patchNode = useAppStore((s) => s.patchNode)
   const [activeTab, setActiveTab] = useState('Dev')
   const [copied, setCopied] = useState(false)
 
@@ -20,11 +25,48 @@ export default function NodeDetail() {
   const node = graph.nodes.find((n) => n.id === selectedNodeId)
   if (!node) return null
 
+  const reviewState = nodeReviews[node.id] ?? {}
+
   function copyPrompt() {
     navigator.clipboard.writeText(node.agentPrompt).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
+  }
+
+  async function handleReview() {
+    setNodeReview(node.id, { loading: true, error: null })
+    setActiveTab('Review')
+    try {
+      const review = await reviewNode({
+        apiKey: config.apiKey,
+        model: config.model,
+        node,
+        allNodes: graph.nodes,
+      })
+      setNodeReview(node.id, { loading: false, review })
+    } catch (err) {
+      setNodeReview(node.id, { loading: false, error: err.message })
+    }
+  }
+
+  async function handleFix() {
+    if (!reviewState.review) return
+    setNodeReview(node.id, { fixing: true, fixError: null })
+    try {
+      const fixed = await fixNode({
+        apiKey: config.apiKey,
+        model: config.model,
+        node,
+        review: reviewState.review,
+        allNodes: graph.nodes,
+      })
+      patchNode(node.id, fixed)
+      setNodeReview(node.id, { fixing: false, review: null })
+      setActiveTab('Dev')
+    } catch (err) {
+      setNodeReview(node.id, { fixing: false, fixError: err.message })
+    }
   }
 
   return (
@@ -39,7 +81,7 @@ export default function NodeDetail() {
         </span>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -51,8 +93,18 @@ export default function NodeDetail() {
             }`}
           >
             {tab}
+            {tab === 'Review' && reviewState.review && (
+              <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-warning align-middle" />
+            )}
           </button>
         ))}
+        <button
+          onClick={handleReview}
+          disabled={reviewState.loading}
+          className="ml-auto px-4 py-2 rounded-xl text-sm font-semibold bg-canvas dark:bg-zinc-700 text-ink dark:text-zinc-300 border border-mute dark:border-zinc-600 hover:bg-primary-pale dark:hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {reviewState.loading ? 'Reviewing…' : '🔍 Review'}
+        </button>
       </div>
 
       {activeTab === 'Dev' && (
@@ -119,6 +171,61 @@ export default function NodeDetail() {
             <p className="text-xs font-semibold text-mute uppercase tracking-wide mb-1">Effort Estimate</p>
             <p className="text-sm text-body dark:text-zinc-300">{node.effortEstimate}</p>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'Review' && (
+        <div className="space-y-4">
+          {reviewState.loading && (
+            <div className="flex items-center gap-2 text-sm text-mute">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Analysing architecture…
+            </div>
+          )}
+
+          {reviewState.error && (
+            <div className="px-3 py-2 rounded-xl bg-negative-bg text-canvas text-sm font-semibold">
+              ⚠ {reviewState.error}
+            </div>
+          )}
+
+          {reviewState.fixError && (
+            <div className="px-3 py-2 rounded-xl bg-negative-bg text-canvas text-sm font-semibold">
+              ⚠ Fix failed: {reviewState.fixError}
+            </div>
+          )}
+
+          {reviewState.review && (
+            <>
+              <pre className="text-xs bg-canvas dark:bg-zinc-900 border border-mute dark:border-zinc-700 rounded-xl p-3 overflow-x-auto text-ink dark:text-zinc-300 font-mono whitespace-pre-wrap">
+                {reviewState.review}
+              </pre>
+              <button
+                onClick={handleFix}
+                disabled={reviewState.fixing}
+                className="w-full bg-warning text-ink font-semibold text-sm rounded-xl px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              >
+                {reviewState.fixing ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    Fixing…
+                  </>
+                ) : (
+                  '⚡ Fix Conflicts'
+                )}
+              </button>
+            </>
+          )}
+
+          {!reviewState.loading && !reviewState.review && !reviewState.error && (
+            <p className="text-sm text-mute">Click "Review" to analyse this node for architectural conflicts.</p>
+          )}
         </div>
       )}
     </div>

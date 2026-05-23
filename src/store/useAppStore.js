@@ -12,7 +12,8 @@ export const useAppStore = create((set) => ({
   },
   features: '',
   graph: null,
-  aiRaw: null,      // { content, thinking } from last API call
+  aiRaw: null,
+  nodeReviews: {},  // { [nodeId]: { loading, review, error } }
   selectedNodeId: null,
   loading: false,
   error: null,
@@ -52,6 +53,27 @@ export const useAppStore = create((set) => ({
     }),
 
   setAiRaw: (aiRaw) => set({ aiRaw }),
+
+  setNodeReview: (nodeId, patch) =>
+    set((state) => ({
+      nodeReviews: {
+        ...state.nodeReviews,
+        [nodeId]: { ...state.nodeReviews[nodeId], ...patch },
+      },
+    })),
+
+  patchNode: (nodeId, fields) =>
+    set((state) => {
+      if (!state.graph) return {}
+      return {
+        graph: {
+          ...state.graph,
+          nodes: state.graph.nodes.map((n) =>
+            n.id === nodeId ? { ...n, ...fields } : n
+          ),
+        },
+      }
+    }),
 
   setSelectedNodeId: (id) =>
     set((state) => ({ selectedNodeId: state.selectedNodeId === id ? null : id })),

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -32,7 +32,8 @@ const nodeTypes = { famNode: FamNode }
 function Flow() {
   const graph = useAppStore((s) => s.graph)
   const setSelectedNodeId = useAppStore((s) => s.setSelectedNodeId)
-  const { nodes: layoutNodes, edges: layoutEdges } = useGraphLayout()
+  const [layoutVersion, setLayoutVersion] = useState(0)
+  const { nodes: layoutNodes, edges: layoutEdges } = useGraphLayout(layoutVersion)
 
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
@@ -66,6 +67,12 @@ function Flow() {
           ⚠ {graph.nodes.length} nodes — graph may be dense
         </div>
       )}
+      <button
+        onClick={() => setLayoutVersion((v) => v + 1)}
+        className="absolute top-3 right-3 z-10 px-3 py-1 rounded-pill bg-canvas border border-mute text-ink text-xs font-semibold hover:bg-primary-pale transition-colors shadow-sm"
+      >
+        ↻ Reorganize
+      </button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
