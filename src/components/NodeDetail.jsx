@@ -35,6 +35,7 @@ export default function NodeDetail() {
   const patchNode = useAppStore((s) => s.patchNode)
   const [activeTab, setActiveTab] = useState('Dev')
   const [copied, setCopied] = useState(false)
+  const [activeStubFile, setActiveStubFile] = useState(null)
 
   if (!graph || !selectedNodeId) return null
 
@@ -44,7 +45,6 @@ export default function NodeDetail() {
   const reviewState = nodeReviews[node.id] ?? {}
   const depthState = nodeDepths[node.id] ?? {}
   const fileState = nodeFiles[node.id] ?? {}
-  const [activeStubFile, setActiveStubFile] = useState(null)
 
   async function handleDepth() {
     setNodeDepth(node.id, { loading: true, error: null })
