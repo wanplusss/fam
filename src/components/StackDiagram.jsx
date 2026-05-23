@@ -25,8 +25,8 @@ export default function StackDiagram() {
   const layers = inferLayers(graph.nodes)
 
   return (
-    <div className="bg-canvas-soft rounded-xl p-6">
-      <h2 className="text-xl font-black text-ink mb-4">Inferred Stack</h2>
+    <div className="bg-canvas-soft dark:bg-zinc-800 rounded-xl p-6">
+      <h2 className="text-xl font-black text-ink dark:text-white mb-4">Inferred Stack</h2>
       <div className="flex flex-wrap gap-3">
         {layers.map((layer) => (
           <span

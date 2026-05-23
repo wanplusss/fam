@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 const STORAGE_KEY_API = 'fam_api_key'
 const STORAGE_KEY_MODEL = 'fam_model'
+const STORAGE_KEY_DARK = 'fam_dark'
 
 export const useAppStore = create((set) => ({
   config: {
@@ -14,6 +15,7 @@ export const useAppStore = create((set) => ({
   selectedNodeId: null,
   loading: false,
   error: null,
+  darkMode: localStorage.getItem(STORAGE_KEY_DARK) === 'true',
 
   setConfig: (partial) =>
     set((state) => {
@@ -35,4 +37,13 @@ export const useAppStore = create((set) => ({
   setError: (error) => set({ error, loading: false }),
 
   clearError: () => set({ error: null }),
+
+  toggleDarkMode: () =>
+    set((state) => {
+      const next = !state.darkMode
+      localStorage.setItem(STORAGE_KEY_DARK, String(next))
+      if (next) document.documentElement.classList.add('dark')
+      else document.documentElement.classList.remove('dark')
+      return { darkMode: next }
+    }),
 }))

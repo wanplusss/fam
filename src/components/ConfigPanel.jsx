@@ -14,22 +14,22 @@ export default function ConfigPanel() {
   }
 
   return (
-    <div className="bg-canvas rounded-xl p-6 shadow-sm">
-      <h2 className="text-xl font-black text-ink mb-4">Configuration</h2>
+    <div className="bg-canvas dark:bg-zinc-800 rounded-xl p-6 shadow-sm">
+      <h2 className="text-xl font-black text-ink dark:text-white mb-4">Configuration</h2>
 
       <div className="mb-4">
-        <label className="block text-sm font-semibold text-ink mb-1">DeepSeek API Key</label>
+        <label className="block text-sm font-semibold text-ink dark:text-zinc-300 mb-1">DeepSeek API Key</label>
         <input
           type="password"
           value={config.apiKey}
           onChange={(e) => setConfig({ apiKey: e.target.value })}
           placeholder="sk-..."
-          className="w-full border border-ink rounded-xl px-4 py-3 text-base text-ink bg-canvas focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full border border-ink dark:border-zinc-600 rounded-xl px-4 py-3 text-base text-ink dark:text-white bg-canvas dark:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-semibold text-ink mb-2">Model</label>
+        <label className="block text-sm font-semibold text-ink dark:text-zinc-300 mb-2">Model</label>
         <div className="flex gap-2">
           {[
             { value: 'deepseek-v4-flash', label: 'Fast (V4 Flash)' },
@@ -41,7 +41,7 @@ export default function ConfigPanel() {
               className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
                 config.model === opt.value
                   ? 'bg-primary text-on-primary border-primary'
-                  : 'bg-canvas text-ink border-ink hover:bg-canvas-soft'
+                  : 'bg-canvas dark:bg-zinc-700 text-ink dark:text-zinc-300 border-ink dark:border-zinc-600 hover:bg-canvas-soft dark:hover:bg-zinc-600'
               }`}
             >
               {opt.label}
@@ -51,7 +51,7 @@ export default function ConfigPanel() {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-ink mb-2">Integrations</label>
+        <label className="block text-sm font-semibold text-ink dark:text-zinc-300 mb-2">Integrations</label>
         <div className="flex flex-wrap gap-2">
           {INTEGRATIONS.map((name) => (
             <button
@@ -60,7 +60,7 @@ export default function ConfigPanel() {
               className={`px-3 py-1 rounded-pill text-sm font-semibold border transition-colors ${
                 config.integrations.includes(name)
                   ? 'bg-primary text-on-primary border-primary'
-                  : 'bg-canvas text-body border-mute hover:bg-canvas-soft'
+                  : 'bg-canvas dark:bg-zinc-700 text-body dark:text-zinc-400 border-mute dark:border-zinc-600 hover:bg-canvas-soft dark:hover:bg-zinc-600'
               }`}
             >
               {name}

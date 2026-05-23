@@ -2,9 +2,15 @@
 export function validateGraph(raw) {
   let parsed
   try {
-    parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+    // Strip markdown code fences DeepSeek sometimes adds despite instructions
+    const cleaned = typeof raw === 'string'
+      ? raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+      : raw
+    parsed = typeof cleaned === 'string' ? JSON.parse(cleaned) : cleaned
   } catch {
-    return { valid: false, error: 'AI returned invalid JSON. Try again.' }
+    const preview = typeof raw === 'string' ? raw.slice(0, 300) : String(raw)
+    console.error('AI raw output:', raw)
+    return { valid: false, error: `Invalid JSON from AI. Check console for raw output. Preview: ${preview}` }
   }
 
   if (!parsed || typeof parsed !== 'object') {

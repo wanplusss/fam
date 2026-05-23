@@ -28,15 +28,15 @@ export default function FeatureInput() {
   }
 
   return (
-    <div className="bg-canvas rounded-xl p-6 shadow-sm">
-      <h2 className="text-xl font-black text-ink mb-4">Feature List</h2>
+    <div className="bg-canvas dark:bg-zinc-800 rounded-xl p-6 shadow-sm">
+      <h2 className="text-xl font-black text-ink dark:text-white mb-4">Feature List</h2>
 
       <div className="flex gap-2 mb-3 flex-wrap">
         {PRESETS.map((p) => (
           <button
             key={p.label}
             onClick={() => setFeatures(p.value)}
-            className="px-3 py-1 rounded-pill text-sm font-semibold bg-canvas-soft text-ink hover:bg-primary-pale border border-mute transition-colors"
+            className="px-3 py-1 rounded-pill text-sm font-semibold bg-canvas-soft dark:bg-zinc-700 text-ink dark:text-zinc-300 hover:bg-primary-pale dark:hover:bg-zinc-600 border border-mute dark:border-zinc-600 transition-colors"
           >
             {p.label}
           </button>
@@ -49,16 +49,13 @@ export default function FeatureInput() {
         onKeyDown={handleKeyDown}
         placeholder={"List your app features, one per line\ne.g. User authentication\n     Dashboard with analytics\n     Payment integration"}
         rows={8}
-        className="w-full border border-ink rounded-xl px-4 py-3 text-base text-ink bg-canvas focus:outline-none focus:ring-2 focus:ring-primary resize-none mb-4"
+        className="w-full border border-ink dark:border-zinc-600 rounded-xl px-4 py-3 text-base text-ink dark:text-white bg-canvas dark:bg-zinc-700 placeholder-mute dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary resize-none mb-4"
       />
 
       {error && (
-        <div className="mb-3 px-3 py-2 rounded-xl bg-negative-bg text-canvas text-sm font-semibold flex items-center gap-2">
-          <span>⚠</span>
+        <div className="mb-3 px-3 py-2 rounded-xl bg-negative-bg text-canvas text-sm font-semibold flex items-start gap-2 break-all">
+          <span className="shrink-0">⚠</span>
           <span>{error}</span>
-          {(error.includes('API key') || error.includes('api key')) && (
-            <span className="text-mute ml-1">— check Config panel</span>
-          )}
         </div>
       )}
 
@@ -79,7 +76,7 @@ export default function FeatureInput() {
           'Generate Architecture'
         )}
       </button>
-      <p className="text-xs text-mute mt-2 text-center">Ctrl+Enter to generate</p>
+      <p className="text-xs text-mute dark:text-zinc-500 mt-2 text-center">Ctrl+Enter to generate</p>
     </div>
   )
 }
