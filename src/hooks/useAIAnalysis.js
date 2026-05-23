@@ -3,7 +3,7 @@ import { analyzeFeatures } from '../lib/deepseek'
 import { validateGraph } from '../lib/schema'
 
 export function useAIAnalysis() {
-  const { config, features, setGraph, setAiRaw, setLoading, setError, clearError } = useAppStore()
+  const { config, features, mergeMode, setGraph, mergeGraph, setAiRaw, setLoading, setError, clearError } = useAppStore()
 
   async function generate() {
     if (!config.apiKey) {
@@ -34,7 +34,8 @@ export function useAIAnalysis() {
         return
       }
 
-      setGraph(result.data)
+      if (mergeMode) mergeGraph(result.data)
+      else setGraph(result.data)
     } catch (err) {
       setError(err.message ?? 'Unknown error. Check your API key.')
     } finally {

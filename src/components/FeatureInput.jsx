@@ -20,6 +20,8 @@ export default function FeatureInput() {
   const features = useAppStore((s) => s.features)
   const loading = useAppStore((s) => s.loading)
   const error = useAppStore((s) => s.error)
+  const mergeMode = useAppStore((s) => s.mergeMode)
+  const toggleMergeMode = useAppStore((s) => s.toggleMergeMode)
   const setFeatures = useAppStore((s) => s.setFeatures)
   const { generate } = useAIAnalysis()
 
@@ -58,6 +60,22 @@ export default function FeatureInput() {
           <span>{error}</span>
         </div>
       )}
+
+      <div className="flex items-center gap-3 mb-3">
+        <button
+          onClick={toggleMergeMode}
+          className={`px-3 py-1 rounded-pill text-sm font-semibold border transition-colors ${
+            mergeMode
+              ? 'bg-primary text-on-primary border-primary'
+              : 'bg-canvas-soft dark:bg-zinc-700 text-mute dark:text-zinc-400 border-mute dark:border-zinc-600 hover:bg-primary-pale'
+          }`}
+        >
+          {mergeMode ? '⊕ Merge mode ON' : '⊕ Merge mode OFF'}
+        </button>
+        <span className="text-xs text-mute dark:text-zinc-500">
+          {mergeMode ? 'New features add to existing graph' : 'Each generate replaces graph'}
+        </span>
+      </div>
 
       <button
         onClick={generate}

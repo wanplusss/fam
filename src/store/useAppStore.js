@@ -17,6 +17,7 @@ export const useAppStore = create((set) => ({
   loading: false,
   error: null,
   darkMode: localStorage.getItem(STORAGE_KEY_DARK) === 'true',
+  mergeMode: false,
 
   setConfig: (partial) =>
     set((state) => {
@@ -30,6 +31,26 @@ export const useAppStore = create((set) => ({
 
   setGraph: (graph) => set({ graph, error: null }),
 
+  mergeGraph: (incoming) =>
+    set((state) => {
+      if (!state.graph) return { graph: incoming, error: null }
+      const existingIds = new Set(state.graph.nodes.map((n) => n.id))
+      const newNodes = incoming.nodes.filter((n) => !existingIds.has(n.id))
+      const existingEdgeKeys = new Set(
+        state.graph.edges.map((e) => `${e.source}->${e.target}`)
+      )
+      const newEdges = incoming.edges.filter(
+        (e) => !existingEdgeKeys.has(`${e.source}->${e.target}`)
+      )
+      return {
+        graph: {
+          nodes: [...state.graph.nodes, ...newNodes],
+          edges: [...state.graph.edges, ...newEdges],
+        },
+        error: null,
+      }
+    }),
+
   setAiRaw: (aiRaw) => set({ aiRaw }),
 
   setSelectedNodeId: (id) =>
@@ -40,6 +61,8 @@ export const useAppStore = create((set) => ({
   setError: (error) => set({ error, loading: false }),
 
   clearError: () => set({ error: null }),
+
+  toggleMergeMode: () => set((state) => ({ mergeMode: !state.mergeMode })),
 
   toggleDarkMode: () =>
     set((state) => {
