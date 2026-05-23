@@ -96,14 +96,29 @@ export function useGraphLayout(layoutVersion = 0) {
       },
     }))
 
-    const edges = graph.edges.map((edge, i) => ({
-      id: `e-${i}`,
-      source: edge.source,
-      target: edge.target,
-      label: edge.label,
-      style: { stroke: '#868685' },
-      labelStyle: { fontSize: 11, fill: '#454745' },
-    }))
+    const nodeById = Object.fromEntries(graph.nodes.map((n) => [n.id, n]))
+
+    const edges = graph.edges.map((edge, i) => {
+      const targetNode = nodeById[edge.target]
+      const passedFiles = (targetNode?.sharedFiles ?? [])
+        .filter((sf) => sf.ownedBy === edge.source)
+        .map((sf) => sf.file.split('/').pop())
+
+      const fileLabel = passedFiles.length > 0 ? passedFiles.join(', ') : null
+      const label = fileLabel ? `${fileLabel}` : (edge.label ?? '')
+
+      return {
+        id: `e-${i}`,
+        source: edge.source,
+        target: edge.target,
+        label,
+        style: { stroke: '#868685' },
+        labelStyle: { fontSize: 10, fill: '#454745', fontFamily: 'monospace' },
+        labelBgStyle: { fill: '#f5f7f4', fillOpacity: 0.85 },
+        labelBgPadding: [4, 6],
+        labelBgBorderRadius: 6,
+      }
+    })
 
     return { nodes, edges }
   // layoutVersion included so button press triggers recalculation
