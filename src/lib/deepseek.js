@@ -1,27 +1,30 @@
 const BASE_URL = import.meta.env.VITE_DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
 
-export const PATTERNS = [
-  'Repository',
-  'CQRS',
-  'Event Sourcing',
-  'Observer',
-  'Facade',
-  'Factory',
-  'Strategy',
-  'Adapter',
-  'Mediator',
-  'Saga',
-  'BFF (Backend for Frontend)',
-  'API Gateway',
-  'Microservice',
-  'Monolith Module',
-  'Service Layer',
-  'Domain Model',
-  'Data Mapper',
-  'Pub/Sub',
-  'Circuit Breaker',
-  'Webhook',
-]
+// category: 'structural' | 'behavioral' | 'architectural'
+export const PATTERN_META = {
+  'Repository':              { category: 'structural',    desc: 'Abstracts data access behind a collection-like interface.' },
+  'Data Mapper':             { category: 'structural',    desc: 'Maps between domain objects and database rows without coupling them.' },
+  'Domain Model':            { category: 'structural',    desc: 'Rich object model encapsulating both data and business behaviour.' },
+  'Facade':                  { category: 'structural',    desc: 'Simplified interface over a complex subsystem.' },
+  'Adapter':                 { category: 'structural',    desc: 'Converts one interface into another that a client expects.' },
+  'Factory':                 { category: 'structural',    desc: 'Delegates object creation to a specialised method or class.' },
+  'Observer':                { category: 'behavioral',    desc: 'Notifies dependents automatically when state changes.' },
+  'Strategy':                { category: 'behavioral',    desc: 'Selects an algorithm at runtime from a family of interchangeable ones.' },
+  'Mediator':                { category: 'behavioral',    desc: 'Centralises communication between components to reduce coupling.' },
+  'Pub/Sub':                 { category: 'behavioral',    desc: 'Publishers emit events; subscribers react without direct coupling.' },
+  'Webhook':                 { category: 'behavioral',    desc: 'HTTP callback triggered by an event in an external system.' },
+  'CQRS':                    { category: 'architectural', desc: 'Separates read (Query) and write (Command) models entirely.' },
+  'Event Sourcing':          { category: 'architectural', desc: 'Stores state as an immutable log of domain events.' },
+  'Saga':                    { category: 'architectural', desc: 'Manages distributed transactions via a sequence of local transactions.' },
+  'BFF (Backend for Frontend)': { category: 'architectural', desc: 'Dedicated backend tailored to the needs of a specific frontend.' },
+  'API Gateway':             { category: 'architectural', desc: 'Single entry point that routes, composes, and secures API calls.' },
+  'Microservice':            { category: 'architectural', desc: 'Independently deployable service with a single bounded context.' },
+  'Monolith Module':         { category: 'architectural', desc: 'Well-bounded module within a single deployable monolith.' },
+  'Service Layer':           { category: 'architectural', desc: 'Defines application boundary; orchestrates domain objects and infrastructure.' },
+  'Circuit Breaker':         { category: 'architectural', desc: 'Stops cascading failures by short-circuiting calls to failing services.' },
+}
+
+export const PATTERNS = Object.keys(PATTERN_META)
 
 const PATTERN_LIST = PATTERNS.join(' | ')
 

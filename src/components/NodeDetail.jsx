@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
-import { reviewNode, fixNode } from '../lib/deepseek'
+import { reviewNode, fixNode, PATTERN_META } from '../lib/deepseek'
 
 const TABS = ['Dev', 'EA', 'SA', 'Review']
 
@@ -8,6 +8,18 @@ const RISK_STYLES = {
   low: 'bg-primary-pale text-positive-deep',
   medium: 'bg-warning text-warning-content',
   high: 'bg-negative-bg text-canvas',
+}
+
+const CATEGORY_STYLES = {
+  structural:    'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  behavioral:    'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  architectural: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+}
+
+const CATEGORY_LABEL = {
+  structural:    'Structural',
+  behavioral:    'Behavioral',
+  architectural: 'Architectural',
 }
 
 export default function NodeDetail() {
@@ -74,7 +86,27 @@ export default function NodeDetail() {
       <div className="flex items-start justify-between mb-4 gap-4">
         <div>
           <h2 className="text-xl font-black text-ink dark:text-white">{node.label}</h2>
-          <p className="text-sm text-body dark:text-zinc-400 mt-1">{node.pattern}</p>
+          {(() => {
+            const meta = PATTERN_META[node.pattern]
+            const catStyle = CATEGORY_STYLES[meta?.category] ?? 'bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300'
+            const catLabel = CATEGORY_LABEL[meta?.category] ?? 'Pattern'
+            return (
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className={`px-2.5 py-0.5 rounded-pill text-xs font-bold ${catStyle}`}>
+                  {catLabel}
+                </span>
+                <span
+                  className="text-sm font-semibold text-ink dark:text-zinc-200"
+                  title={meta?.desc ?? ''}
+                >
+                  {node.pattern}
+                </span>
+                {meta?.desc && (
+                  <span className="text-xs text-mute dark:text-zinc-500 italic">— {meta.desc}</span>
+                )}
+              </div>
+            )
+          })()}
         </div>
         <span className={`px-3 py-1 rounded-pill text-sm font-semibold shrink-0 ${RISK_STYLES[node.riskLevel]}`}>
           {node.riskLevel} risk
