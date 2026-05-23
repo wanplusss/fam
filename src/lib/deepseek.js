@@ -1,17 +1,44 @@
 const BASE_URL = import.meta.env.VITE_DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
 
+export const PATTERNS = [
+  'Repository',
+  'CQRS',
+  'Event Sourcing',
+  'Observer',
+  'Facade',
+  'Factory',
+  'Strategy',
+  'Adapter',
+  'Mediator',
+  'Saga',
+  'BFF (Backend for Frontend)',
+  'API Gateway',
+  'Microservice',
+  'Monolith Module',
+  'Service Layer',
+  'Domain Model',
+  'Data Mapper',
+  'Pub/Sub',
+  'Circuit Breaker',
+  'Webhook',
+]
+
+const PATTERN_LIST = PATTERNS.join(' | ')
+
 const SCHEMA_DESCRIPTION = `{
   "nodes": [{
     "id": "string (unique)",
     "label": "string (feature name)",
-    "pattern": "string (e.g. Repository, CQRS, Observer)",
+    "pattern": "MUST be one of: ${PATTERN_LIST}",
     "dataFlow": "string (describe how data moves)",
     "riskLevel": "low | medium | high",
     "nfrTags": ["string (e.g. Scalability, Security, Performance)"],
     "folderStructure": "string (e.g. src/features/auth/\\n  authService.js\\n  authController.js)",
+    "ownedFiles": ["string (files this node owns, e.g. src/features/auth/authService.js)"],
+    "sharedFiles": [{"file": "string (file path)", "ownedBy": "string (node id that owns it)"}],
     "businessReason": "string (why this feature matters to the business)",
     "effortEstimate": "string (e.g. 3 days, 1 week)",
-    "agentPrompt": "string (copy-paste prompt for a coding agent to implement this feature)",
+    "agentPrompt": "string (copy-paste prompt for a coding agent to implement this feature, referencing sibling node files where relevant)",
     "dependencies": ["string (ids of nodes this node depends on)"]
   }],
   "edges": [{
@@ -24,9 +51,10 @@ const SCHEMA_DESCRIPTION = `{
 function buildExistingGraphContext(existingGraph) {
   if (!existingGraph) return ''
 
-  const nodesSummary = existingGraph.nodes.map((n) =>
-    `- ID: ${n.id} | Label: ${n.label} | Pattern: ${n.pattern} | DataFlow: ${n.dataFlow} | Folder: ${n.folderStructure.split('\n')[0]}`
-  ).join('\n')
+  const nodesSummary = existingGraph.nodes.map((n) => {
+    const files = (n.ownedFiles ?? []).join(', ') || 'none'
+    return `- ID: ${n.id} | Label: ${n.label} | Pattern: ${n.pattern} | DataFlow: ${n.dataFlow} | Folder: ${n.folderStructure.split('\n')[0]} | OwnedFiles: ${files}`
+  }).join('\n')
 
   const edgesSummary = existingGraph.edges.map((e) =>
     `- ${e.source} → ${e.target} (${e.label})`
@@ -116,7 +144,7 @@ OTHER NODES IN SYSTEM:
 ${siblings}
 
 Return a single corrected node JSON object matching this schema exactly:
-{"id":"string","label":"string","pattern":"string","dataFlow":"string","riskLevel":"low|medium|high","nfrTags":["string"],"folderStructure":"string","businessReason":"string","effortEstimate":"string","agentPrompt":"string","dependencies":["string"]}`,
+{"id":"string","label":"string","pattern":"one of: ${PATTERN_LIST}","dataFlow":"string","riskLevel":"low|medium|high","nfrTags":["string"],"folderStructure":"string","ownedFiles":["string"],"sharedFiles":[{"file":"string","ownedBy":"string"}],"businessReason":"string","effortEstimate":"string","agentPrompt":"string","dependencies":["string"]}`,
   })
 
   // extract JSON object from response

@@ -1,3 +1,5 @@
+import { PATTERNS } from './deepseek'
+
 // Returns { valid: true, data } or { valid: false, error: string }
 export function validateGraph(raw) {
   let parsed
@@ -56,6 +58,14 @@ export function validateGraph(raw) {
     if (!Array.isArray(node.dependencies)) {
       return { valid: false, error: `Node "${node.id}" dependencies must be an array.` }
     }
+    if (!PATTERNS.includes(node.pattern)) {
+      // Soft coerce: find closest match by prefix, otherwise keep as-is (don't break on unknown)
+      const match = PATTERNS.find((p) => p.toLowerCase().startsWith(node.pattern.toLowerCase().slice(0, 4)))
+      if (match) node.pattern = match
+    }
+    // Default optional fields if model omitted them
+    if (!Array.isArray(node.ownedFiles)) node.ownedFiles = []
+    if (!Array.isArray(node.sharedFiles)) node.sharedFiles = []
   }
 
   for (const edge of parsed.edges) {

@@ -158,6 +158,36 @@ export default function NodeDetail() {
               <p className="text-sm text-mute">No dependencies.</p>
             )}
           </div>
+          <div>
+            <p className="text-xs font-semibold text-mute uppercase tracking-wide mb-1">Owned Files</p>
+            {(node.ownedFiles ?? []).length > 0 ? (
+              <ul className="space-y-1">
+                {node.ownedFiles.map((f) => (
+                  <li key={f} className="text-xs font-mono bg-canvas dark:bg-zinc-900 border border-mute dark:border-zinc-700 rounded-lg px-2 py-1 text-ink dark:text-zinc-300">
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-mute">None declared.</p>
+            )}
+          </div>
+          {(node.sharedFiles ?? []).length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-mute uppercase tracking-wide mb-1">Shared From Other Nodes</p>
+              <ul className="space-y-1">
+                {node.sharedFiles.map((sf, i) => {
+                  const owner = graph.nodes.find((n) => n.id === sf.ownedBy)
+                  return (
+                    <li key={i} className="text-xs font-mono bg-canvas dark:bg-zinc-900 border border-mute dark:border-zinc-700 rounded-lg px-2 py-1 text-ink dark:text-zinc-300 flex items-center justify-between gap-2">
+                      <span>{sf.file}</span>
+                      <span className="shrink-0 text-mute dark:text-zinc-500">← {owner?.label ?? sf.ownedBy}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
