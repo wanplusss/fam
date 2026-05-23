@@ -3,7 +3,7 @@ import { analyzeFeatures } from '../lib/deepseek'
 import { validateGraph } from '../lib/schema'
 
 export function useAIAnalysis() {
-  const { config, features, setGraph, setLoading, setError, clearError } = useAppStore()
+  const { config, features, setGraph, setAiRaw, setLoading, setError, clearError } = useAppStore()
 
   async function generate() {
     if (!config.apiKey) {
@@ -19,14 +19,16 @@ export function useAIAnalysis() {
     clearError()
 
     try {
-      const rawContent = await analyzeFeatures({
+      const { content, thinking } = await analyzeFeatures({
         apiKey: config.apiKey,
         model: config.model,
         features: features.trim(),
         integrations: config.integrations,
       })
 
-      const result = validateGraph(rawContent)
+      setAiRaw({ content, thinking })
+
+      const result = validateGraph(content)
       if (!result.valid) {
         setError(result.error)
         return

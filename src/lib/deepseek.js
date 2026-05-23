@@ -55,7 +55,15 @@ export async function analyzeFeatures({ apiKey, model, features, integrations })
   }
 
   const data = await response.json()
-  const content = data?.choices?.[0]?.message?.content
-  if (!content) throw new Error('DeepSeek returned empty response.')
-  return content
+  const message = data?.choices?.[0]?.message
+  const thinking = message?.reasoning_content ?? null
+  const content = message?.content ?? ''
+
+  if (!content && !thinking) {
+    console.error('Full DeepSeek response:', JSON.stringify(data, null, 2))
+    throw new Error('DeepSeek returned empty response. Check console for full API response.')
+  }
+
+  // content may be empty if model only returned thinking; use thinking as fallback
+  return { content: content || thinking, thinking }
 }

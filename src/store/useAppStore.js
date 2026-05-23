@@ -12,6 +12,7 @@ export const useAppStore = create((set) => ({
   },
   features: '',
   graph: null,
+  aiRaw: null,      // { content, thinking } from last API call
   selectedNodeId: null,
   loading: false,
   error: null,
@@ -28,6 +29,8 @@ export const useAppStore = create((set) => ({
   setFeatures: (features) => set({ features }),
 
   setGraph: (graph) => set({ graph, error: null }),
+
+  setAiRaw: (aiRaw) => set({ aiRaw }),
 
   setSelectedNodeId: (id) =>
     set((state) => ({ selectedNodeId: state.selectedNodeId === id ? null : id })),
