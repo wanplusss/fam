@@ -34,7 +34,7 @@ export async function analyzeFeatures({ apiKey, model, features, integrations })
     },
     body: JSON.stringify({
       model,
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [
         {
           role: 'system',
