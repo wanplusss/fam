@@ -8,6 +8,11 @@ export const PATTERN_LIBRARY = [
     example: 'UserRepository.findByEmail() hides whether data comes from MySQL, Redis cache, or a test fixture.',
     tradeoffs: 'Testable and swappable, but adds a layer and can become a dumping ground for unrelated queries.',
     pairedWith: ['Service Layer', 'Domain Model', 'Data Mapper'],
+    resources: [
+      { label: 'Fowler — Repository (PoEAA)', url: 'https://martinfowler.com/eaaCatalog/repository.html' },
+      { label: 'Refactoring.Guru — Repository', url: 'https://refactoring.guru/design-patterns/repository' },
+      { label: 'Microsoft — Repository Pattern', url: 'https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design' },
+    ],
   },
   {
     name: 'Data Mapper',
@@ -18,6 +23,10 @@ export const PATTERN_LIBRARY = [
     example: 'UserMapper.toDomain(row) converts a DB row into a User domain object with business methods.',
     tradeoffs: 'Clean domain model, but more boilerplate than Active Record patterns.',
     pairedWith: ['Repository', 'Domain Model'],
+    resources: [
+      { label: 'Fowler — Data Mapper (PoEAA)', url: 'https://martinfowler.com/eaaCatalog/dataMapper.html' },
+      { label: 'TypeORM Data Mapper docs', url: 'https://typeorm.io/active-record-data-mapper' },
+    ],
   },
   {
     name: 'Domain Model',
@@ -28,6 +37,11 @@ export const PATTERN_LIBRARY = [
     example: 'Order object knows how to validate its own state, calculate totals, and apply coupon rules.',
     tradeoffs: 'Business logic is co-located and testable, but requires discipline to avoid fat models.',
     pairedWith: ['Repository', 'Data Mapper', 'Service Layer'],
+    resources: [
+      { label: 'Fowler — Domain Model (PoEAA)', url: 'https://martinfowler.com/eaaCatalog/domainModel.html' },
+      { label: 'Fowler — Anemic Domain Model (anti-pattern)', url: 'https://martinfowler.com/bliki/AnemicDomainModel.html' },
+      { label: 'DDD Reference — Eric Evans', url: 'https://www.domainlanguage.com/ddd/reference/' },
+    ],
   },
   {
     name: 'Facade',
@@ -38,6 +52,10 @@ export const PATTERN_LIBRARY = [
     example: 'NotificationFacade.send(user, message) internally decides email vs push vs SMS.',
     tradeoffs: 'Hides complexity, easy to swap internals. But can become a God object if not bounded.',
     pairedWith: ['Service Layer', 'Adapter'],
+    resources: [
+      { label: 'Refactoring.Guru — Facade', url: 'https://refactoring.guru/design-patterns/facade' },
+      { label: 'SourceMaking — Facade', url: 'https://sourcemaking.com/design_patterns/facade' },
+    ],
   },
   {
     name: 'Adapter',
@@ -48,6 +66,10 @@ export const PATTERN_LIBRARY = [
     example: 'StripeAdapter wraps Stripe SDK to match your internal PaymentGateway interface.',
     tradeoffs: 'Decouples you from external interfaces, but adds a translation layer to maintain.',
     pairedWith: ['Facade', 'Repository'],
+    resources: [
+      { label: 'Refactoring.Guru — Adapter', url: 'https://refactoring.guru/design-patterns/adapter' },
+      { label: 'SourceMaking — Adapter', url: 'https://sourcemaking.com/design_patterns/adapter' },
+    ],
   },
   {
     name: 'Factory',
@@ -58,6 +80,10 @@ export const PATTERN_LIBRARY = [
     example: 'DatabaseFactory.create(config) returns MySQLConnection or SQLiteConnection based on env.',
     tradeoffs: 'Centralises creation logic, easy to extend. Can obscure what type you actually get.',
     pairedWith: ['Adapter', 'Strategy'],
+    resources: [
+      { label: 'Refactoring.Guru — Factory Method', url: 'https://refactoring.guru/design-patterns/factory-method' },
+      { label: 'Refactoring.Guru — Abstract Factory', url: 'https://refactoring.guru/design-patterns/abstract-factory' },
+    ],
   },
   {
     name: 'Observer',
@@ -68,6 +94,10 @@ export const PATTERN_LIBRARY = [
     example: 'UserCreated event → EmailService, AnalyticsService, and OnboardingService each listen and react.',
     tradeoffs: 'Loose coupling, easy to add subscribers. Hard to trace execution flow; ordering is implicit.',
     pairedWith: ['Pub/Sub', 'Mediator', 'Event Sourcing'],
+    resources: [
+      { label: 'Refactoring.Guru — Observer', url: 'https://refactoring.guru/design-patterns/observer' },
+      { label: 'Fowler — Event-Driven Architecture', url: 'https://martinfowler.com/articles/201701-event-driven.html' },
+    ],
   },
   {
     name: 'Strategy',
@@ -78,6 +108,10 @@ export const PATTERN_LIBRARY = [
     example: 'PaymentProcessor picks StripeStrategy or PayPalStrategy at runtime based on user preference.',
     tradeoffs: 'Open/Closed principle — easy to add strategies. Callers must know which strategy to pick.',
     pairedWith: ['Factory', 'Facade'],
+    resources: [
+      { label: 'Refactoring.Guru — Strategy', url: 'https://refactoring.guru/design-patterns/strategy' },
+      { label: 'SourceMaking — Strategy', url: 'https://sourcemaking.com/design_patterns/strategy' },
+    ],
   },
   {
     name: 'Mediator',
@@ -88,6 +122,10 @@ export const PATTERN_LIBRARY = [
     example: 'CommandBus routes commands to the correct handler — controllers never import services directly.',
     tradeoffs: 'Eliminates direct coupling. Mediator can become a complex central controller.',
     pairedWith: ['CQRS', 'Observer'],
+    resources: [
+      { label: 'Refactoring.Guru — Mediator', url: 'https://refactoring.guru/design-patterns/mediator' },
+      { label: 'MediatR library (C#/.NET)', url: 'https://github.com/jbogard/MediatR' },
+    ],
   },
   {
     name: 'Pub/Sub',
@@ -98,6 +136,11 @@ export const PATTERN_LIBRARY = [
     example: 'OrderPlaced event published to a message broker → InventoryService, EmailService, FraudService each consume independently.',
     tradeoffs: 'Fully decoupled, scales well. Debugging is harder; message ordering and at-least-once delivery need handling.',
     pairedWith: ['Event Sourcing', 'Saga', 'Observer'],
+    resources: [
+      { label: 'Fowler — What do you mean by Event-Driven?', url: 'https://martinfowler.com/articles/201701-event-driven.html' },
+      { label: 'Redis Pub/Sub docs', url: 'https://redis.io/docs/manual/pubsub/' },
+      { label: 'AWS SNS/SQS — Pub/Sub pattern', url: 'https://aws.amazon.com/pub-sub-messaging/' },
+    ],
   },
   {
     name: 'Webhook',
@@ -108,6 +151,11 @@ export const PATTERN_LIBRARY = [
     example: 'Stripe POSTs to /webhooks/payment-confirmed when a charge succeeds.',
     tradeoffs: 'Simple integration, no polling. Must handle retries, idempotency, and signature verification.',
     pairedWith: ['Pub/Sub', 'Adapter', 'Circuit Breaker'],
+    resources: [
+      { label: 'Stripe Webhook docs', url: 'https://stripe.com/docs/webhooks' },
+      { label: 'GitHub Webhooks docs', url: 'https://docs.github.com/en/developers/webhooks-and-events/webhooks' },
+      { label: 'Webhook.site — testing tool', url: 'https://webhook.site' },
+    ],
   },
   {
     name: 'CQRS',
@@ -118,6 +166,11 @@ export const PATTERN_LIBRARY = [
     example: 'CreateOrderCommand → write model updates DB. GetOrderSummaryQuery → read model hits a denormalised view optimised for display.',
     tradeoffs: 'Independent scaling of reads/writes, clean separation. Significant complexity; eventual consistency between models.',
     pairedWith: ['Event Sourcing', 'Mediator', 'Saga'],
+    resources: [
+      { label: 'Fowler — CQRS', url: 'https://martinfowler.com/bliki/CQRS.html' },
+      { label: 'Microsoft — CQRS pattern', url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs' },
+      { label: 'Greg Young — CQRS Documents', url: 'https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf' },
+    ],
   },
   {
     name: 'Event Sourcing',
@@ -128,6 +181,11 @@ export const PATTERN_LIBRARY = [
     example: 'Instead of storing current balance, store [MoneyDeposited, MoneyWithdrawn, ...] and derive balance by replaying.',
     tradeoffs: 'Perfect audit trail, time-travel debugging. Querying current state requires projection; schema evolution is hard.',
     pairedWith: ['CQRS', 'Pub/Sub', 'Saga'],
+    resources: [
+      { label: 'Fowler — Event Sourcing', url: 'https://martinfowler.com/eaaDev/EventSourcing.html' },
+      { label: 'Microsoft — Event Sourcing pattern', url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing' },
+      { label: 'EventStoreDB docs', url: 'https://developers.eventstore.com/' },
+    ],
   },
   {
     name: 'Saga',
@@ -138,6 +196,11 @@ export const PATTERN_LIBRARY = [
     example: 'BookTrip saga: reserve flight → reserve hotel → charge card. If charge fails → cancel hotel → cancel flight.',
     tradeoffs: 'Handles distributed failures gracefully. Complex to implement; compensating transactions must be idempotent.',
     pairedWith: ['CQRS', 'Event Sourcing', 'Pub/Sub'],
+    resources: [
+      { label: 'Microsoft — Saga distributed transactions', url: 'https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga' },
+      { label: 'Microservices.io — Saga pattern', url: 'https://microservices.io/patterns/data/saga.html' },
+      { label: 'Original Saga paper (1987)', url: 'https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf' },
+    ],
   },
   {
     name: 'BFF (Backend for Frontend)',
@@ -148,6 +211,10 @@ export const PATTERN_LIBRARY = [
     example: 'Mobile BFF returns compressed, minimal payloads. Web BFF returns richer data with extra joins — same underlying services.',
     tradeoffs: 'Optimised per client, hides microservice complexity. Extra service to deploy and maintain per client type.',
     pairedWith: ['API Gateway', 'Facade', 'Service Layer'],
+    resources: [
+      { label: 'Fowler — BFF', url: 'https://samnewman.io/patterns/architectural/bff/' },
+      { label: 'Microsoft — Backends for Frontends', url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/backends-for-frontends' },
+    ],
   },
   {
     name: 'API Gateway',
@@ -158,6 +225,11 @@ export const PATTERN_LIBRARY = [
     example: 'All requests hit api.example.com → gateway routes /users to UserService, /orders to OrderService, handles JWT validation for all.',
     tradeoffs: 'Single place for cross-cutting concerns. Single point of failure; can become a bottleneck.',
     pairedWith: ['BFF (Backend for Frontend)', 'Circuit Breaker', 'Microservice'],
+    resources: [
+      { label: 'Microsoft — API Gateway pattern', url: 'https://learn.microsoft.com/en-us/azure/architecture/microservices/design/gateway' },
+      { label: 'Kong API Gateway', url: 'https://konghq.com/products/kong-gateway' },
+      { label: 'AWS API Gateway docs', url: 'https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html' },
+    ],
   },
   {
     name: 'Microservice',
@@ -168,6 +240,11 @@ export const PATTERN_LIBRARY = [
     example: 'OrderService, InventoryService, NotificationService each deployed independently with their own DB.',
     tradeoffs: 'Independent deploy and scale. Distributed systems complexity: network failures, data consistency, observability.',
     pairedWith: ['API Gateway', 'Saga', 'Circuit Breaker', 'Pub/Sub'],
+    resources: [
+      { label: 'Fowler — Microservices', url: 'https://martinfowler.com/articles/microservices.html' },
+      { label: 'Microservices.io patterns', url: 'https://microservices.io/patterns/index.html' },
+      { label: 'Sam Newman — Building Microservices (book)', url: 'https://samnewman.io/books/building_microservices/' },
+    ],
   },
   {
     name: 'Monolith Module',
@@ -178,6 +255,10 @@ export const PATTERN_LIBRARY = [
     example: 'A single Node.js app with src/modules/auth, src/modules/billing, src/modules/notifications — clear boundaries, one deploy.',
     tradeoffs: 'Simple to operate and debug. Tight coupling risk if boundaries are not enforced; scales as one unit.',
     pairedWith: ['Service Layer', 'Repository', 'Facade'],
+    resources: [
+      { label: 'Fowler — Modular Monolith', url: 'https://martinfowler.com/bliki/MonolithFirst.html' },
+      { label: 'Shopify — Modular Rails monolith', url: 'https://engineering.shopify.com/blogs/engineering/deconstructing-monolith-designing-software-maximizes-developer-productivity' },
+    ],
   },
   {
     name: 'Service Layer',
@@ -188,6 +269,10 @@ export const PATTERN_LIBRARY = [
     example: 'OrderService.placeOrder() validates input, calls OrderRepository, triggers NotificationService, logs audit — controller just calls this one method.',
     tradeoffs: 'Single place for business orchestration, easy to test. Can grow fat if not kept focused per use-case.',
     pairedWith: ['Repository', 'Domain Model', 'Facade', 'Mediator'],
+    resources: [
+      { label: 'Fowler — Service Layer (PoEAA)', url: 'https://martinfowler.com/eaaCatalog/serviceLayer.html' },
+      { label: 'Microsoft — Application layer', url: 'https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-application-layer-implementation-web-api' },
+    ],
   },
   {
     name: 'Circuit Breaker',
@@ -198,6 +283,11 @@ export const PATTERN_LIBRARY = [
     example: 'PaymentGateway circuit breaker opens after 5 failures — returns cached/fallback response instead of waiting for timeout.',
     tradeoffs: 'Resilience and fast failure. Adds state management; must tune thresholds carefully.',
     pairedWith: ['API Gateway', 'Microservice', 'Webhook', 'Saga'],
+    resources: [
+      { label: 'Fowler — Circuit Breaker', url: 'https://martinfowler.com/bliki/CircuitBreaker.html' },
+      { label: 'Microsoft — Circuit Breaker pattern', url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker' },
+      { label: 'Polly (.NET resilience library)', url: 'https://github.com/App-vNext/Polly' },
+    ],
   },
 ]
 
