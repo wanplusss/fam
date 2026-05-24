@@ -5,6 +5,7 @@ import ConfigPanel from './components/ConfigPanel'
 import FeatureInput from './components/FeatureInput'
 import StackDiagram from './components/StackDiagram'
 import GraphCanvas from './components/GraphCanvas'
+import BuildOrder from './components/BuildOrder'
 import NodeDetail from './components/NodeDetail'
 import EdgeHandoff from './components/EdgeHandoff'
 import AiResponsePanel from './components/AiResponsePanel'
@@ -48,6 +49,7 @@ export default function App() {
         <FeatureInput />
         <StackDiagram />
         <GraphCanvas />
+        <BuildOrder />
         <AiResponsePanel />
         <NodeDetail />
         <EdgeHandoff />
