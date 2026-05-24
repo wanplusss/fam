@@ -10,6 +10,7 @@ import NodeDetail from './components/NodeDetail'
 import EdgeHandoff from './components/EdgeHandoff'
 import AiResponsePanel from './components/AiResponsePanel'
 import ExportPanel from './components/ExportPanel'
+import PatternLibrary from './components/PatternLibrary'
 
 export default function App() {
   const darkMode = useAppStore((s) => s.darkMode)
@@ -54,6 +55,7 @@ export default function App() {
         <NodeDetail />
         <EdgeHandoff />
         <ExportPanel />
+        <PatternLibrary />
       </main>
 
       <footer className="bg-ink dark:bg-zinc-950 text-canvas-soft text-sm px-6 py-8 mt-12 text-center">
