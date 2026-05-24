@@ -25,7 +25,7 @@ export default function App() {
     <div className="min-h-screen bg-canvas-soft dark:bg-zinc-900 transition-colors">
       <nav className="bg-canvas dark:bg-zinc-800 sticky top-0 z-20 px-6 py-4 flex items-center justify-between border-b border-canvas-soft dark:border-zinc-700">
         <div>
-          <span className="text-base font-black text-ink dark:text-primary">FAM</span>
+          <span className="text-base font-black text-ink dark:text-primary">Recode</span>
           <span className="text-xs text-mute ml-2 hidden sm:inline dark:text-zinc-400">Feature Architecture Map</span>
         </div>
         <div className="flex items-center gap-4">
@@ -42,7 +42,7 @@ export default function App() {
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div>
-          <h1 className="text-5xl font-black text-ink dark:text-white leading-none mb-2">Feature Architecture Map</h1>
+          <h1 className="text-5xl font-black text-ink dark:text-white leading-none mb-2">Recode</h1>
           <p className="text-base text-body dark:text-zinc-400">Transform a feature list into a structured visual architecture.</p>
         </div>
 

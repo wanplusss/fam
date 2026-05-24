@@ -131,7 +131,7 @@ function FullscreenOverlay({ onClose }) {
     <div className="fixed inset-0 z-50 bg-canvas-soft dark:bg-zinc-900 flex flex-col">
       {/* header bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-canvas dark:bg-zinc-800 border-b border-mute dark:border-zinc-700 shrink-0">
-        <span className="text-sm font-black text-ink dark:text-white">Feature Architecture Map</span>
+        <span className="text-sm font-black text-ink dark:text-white">Recode</span>
         <button
           onClick={onClose}
           className="px-3 py-1 rounded-xl text-sm font-semibold bg-canvas-soft dark:bg-zinc-700 text-ink dark:text-zinc-300 border border-mute dark:border-zinc-600 hover:bg-primary-pale transition-colors"

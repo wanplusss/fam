@@ -2,11 +2,11 @@ import { saveAs } from 'file-saver'
 
 export function toJSON(graph) {
   const blob = new Blob([JSON.stringify(graph, null, 2)], { type: 'application/json' })
-  saveAs(blob, 'fam-export.json')
+  saveAs(blob, 'recode-export.json')
 }
 
 export function toMarkdown(graph) {
-  const lines = ['# FAM Architecture Document\n']
+  const lines = ['# Recode Architecture Document\n']
   for (const node of graph.nodes) {
     lines.push(`## ${node.label}`)
     lines.push(`**Pattern:** ${node.pattern}`)
@@ -19,11 +19,11 @@ export function toMarkdown(graph) {
     lines.push('')
   }
   const blob = new Blob([lines.join('\n')], { type: 'text/markdown' })
-  saveAs(blob, 'fam-architecture.md')
+  saveAs(blob, 'recode-architecture.md')
 }
 
 export function toScaffold(graph) {
-  const lines = ['# FAM Folder Scaffold\n']
+  const lines = ['# Recode Folder Scaffold\n']
   for (const node of graph.nodes) {
     lines.push(`## ${node.label}`)
     lines.push('```')
@@ -36,7 +36,7 @@ export function toScaffold(graph) {
 }
 
 export function toPrompts(graph) {
-  const lines = ['# FAM Agent Prompts\n']
+  const lines = ['# Recode Agent Prompts\n']
   for (const node of graph.nodes) {
     lines.push(`## ${node.label}`)
     lines.push(node.agentPrompt)
@@ -109,5 +109,5 @@ export function toBlueprint(graph) {
   }
 
   const blob = new Blob([lines.join('\n')], { type: 'text/markdown' })
-  saveAs(blob, 'fam-blueprint.md')
+  saveAs(blob, 'recode-blueprint.md')
 }
